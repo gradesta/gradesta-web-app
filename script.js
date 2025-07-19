@@ -1,3 +1,6 @@
+// Cell distance constants
+const MAX_VERTICAL_DISTANCE = 5;
+const MAX_GRAPH_DISTANCE = MAX_VERTICAL_DISTANCE + 1;
 // Cell data structure with 4 directional neighbor functions and contents
 class Cell {
     constructor(contents = "") {
@@ -186,59 +189,53 @@ class GraphVisualizer {
     
     calculatePositions() {
         this.cellPositions.clear();
-        
-        // Calculate all positions relative to the current cell
-        this.calculatePositionRecursive(this.currentCell, 0, 0, new Set());
-        
+        // Calculate all positions relative to the current cell, with depth limit MAX_GRAPH_DISTANCE
+        this.calculatePositionRecursive(this.currentCell, 0, 0, new Set(), 0);
         // Apply viewport offset to center the current cell
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
-        
         this.cellPositions.forEach((pos, cell) => {
             pos.x += centerX - this.cellSize.width / 2;
             pos.y += centerY - this.cellSize.height / 2;
         });
     }
     
-    calculatePositionRecursive(cell, x, y, visited) {
-        if (!cell || visited.has(cell)) return;
+    calculatePositionRecursive(cell, x, y, visited, depth = 0) {
+        if (!cell || visited.has(cell) || depth > MAX_GRAPH_DISTANCE) return;
         visited.add(cell);
-        
         this.cellPositions.set(cell, { x, y });
-        
-        // Calculate positions for connected cells
+        // Calculate positions for connected cells, incrementing depth
         if (cell.getUp()) {
-            this.calculatePositionRecursive(cell.getUp(), x, y - this.spacing.y, visited);
+            this.calculatePositionRecursive(cell.getUp(), x, y - this.spacing.y, visited, depth + 1);
         }
         if (cell.getDown()) {
-            this.calculatePositionRecursive(cell.getDown(), x, y + this.spacing.y, visited);
+            this.calculatePositionRecursive(cell.getDown(), x, y + this.spacing.y, visited, depth + 1);
         }
         if (cell.getLeft()) {
-            this.calculatePositionRecursive(cell.getLeft(), x - this.spacing.x, y, visited);
+            this.calculatePositionRecursive(cell.getLeft(), x - this.spacing.x, y, visited, depth + 1);
         }
         if (cell.getRight()) {
-            this.calculatePositionRecursive(cell.getRight(), x + this.spacing.x, y, visited);
+            this.calculatePositionRecursive(cell.getRight(), x + this.spacing.x, y, visited, depth + 1);
         }
     }
     
     render() {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Find up to 5 cells above and below the current cell
+        // Find up to MAX_VERTICAL_DISTANCE cells above and below the current cell
         const verticalColumn = new Set();
         let currentInColumn = this.currentCell;
         let steps = 0;
-        // Go up to 5 steps above
-        while (currentInColumn && steps < 5) {
+        // Go up to MAX_VERTICAL_DISTANCE steps above
+        while (currentInColumn && steps < MAX_VERTICAL_DISTANCE) {
             verticalColumn.add(currentInColumn);
             currentInColumn = currentInColumn.getUp();
             steps++;
         }
-        // Go down to 5 steps below
+        // Go down to MAX_VERTICAL_DISTANCE steps below
         currentInColumn = this.currentCell.getDown();
         steps = 0;
-        while (currentInColumn && steps < 5) {
+        while (currentInColumn && steps < MAX_VERTICAL_DISTANCE) {
             verticalColumn.add(currentInColumn);
             currentInColumn = currentInColumn.getDown();
             steps++;
