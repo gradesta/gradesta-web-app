@@ -1,66 +1,17 @@
 // Cell distance constants
 const MAX_VERTICAL_DISTANCE = 5;
 const MAX_GRAPH_DISTANCE = MAX_VERTICAL_DISTANCE + 1;
-// Cell data structure with 4 directional neighbor functions and contents
-class Cell {
-    constructor(contents = "") {
-        this.contents = contents;  // String contents of the cell
-        // Neighbor functions (can be reassigned)
-        this.getUp = () => null;
-        this.getDown = () => null;
-        this.getLeft = () => null;
-        this.getRight = () => null;
-    }
-}
 
-// Sample graph with 5 cells in a stack with some left/right connections
-const sample_graph = (() => {
-    // Create 5 cells
-    const cell1 = new Cell("Top");
-    const cell2 = new Cell("Second");
-    const cell3 = new Cell("Third");
-    const cell4 = new Cell("Fourth");
-    const cell5 = new Cell("Bottom");
-    
-    // Create left and right branch cells
-    const leftBranch = new Cell("Left Branch");
-    const rightBranch = new Cell("Right Branch");
-    const leftLeaf = new Cell("Left Leaf");
-    const rightLeftLeaf = new Cell("Right Left Leaf");
-    const rightLeaf = new Cell("Right Leaf");
-    
-    // Connect main stack vertically (using neighbor functions)
-    cell1.getDown = () => cell2;
-    cell2.getUp = () => cell1;
-    cell2.getDown = () => cell3;
-    cell3.getUp = () => cell2;
-    cell3.getDown = () => cell4;
-    cell4.getUp = () => cell3;
-    cell4.getDown = () => cell5;
-    cell5.getUp = () => cell4;
-    
-    // Add left/right connections (using neighbor functions)
-    cell2.getLeft = () => leftBranch;
-    leftBranch.getRight = () => cell2;
-    leftBranch.getDown = () => leftLeaf;
-    leftLeaf.getUp = () => leftBranch;
-    leftLeaf.getRight = () => rightLeftLeaf;
-    rightLeftLeaf.getLeft = () => leftLeaf;
-    
-    cell3.getRight = () => rightBranch;
-    rightBranch.getLeft = () => cell3;
-    rightBranch.getDown = () => rightLeaf;
-    rightLeaf.getUp = () => rightBranch;
-    
-    return cell1; // Return the top cell as the entry point
-})();
+import { home_graph, collatz_graph, Cell } from './exampleGraphs.js';
+// All graph construction code removed. Only use imported graphs and Cell.
+
 
 // Graph Visualizer Class
 class GraphVisualizer {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
-        this.currentCell = sample_graph;
+        this.currentCell = home_graph;
         this.isEditMode = false;
         this.cellPositions = new Map();
         this.cellSize = { width: 120, height: 80 };

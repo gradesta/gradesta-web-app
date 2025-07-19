@@ -1,0 +1,11 @@
+{
+  "name": "gradesta-web",
+  "version": "1.0.0",
+  "description": "Graph visualizer static site",
+  "scripts": {
+    "build": "esbuild script.js --bundle --outfile=bundle.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  }
+} 
