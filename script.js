@@ -2,7 +2,7 @@
 const MAX_VERTICAL_DISTANCE = 5;
 const MAX_GRAPH_DISTANCE = MAX_VERTICAL_DISTANCE + 1;
 
-import { home_graph, collatz_graph, Cell } from './exampleGraphs.js';
+import { home_graph, Cell } from './exampleGraphs.js';
 // All graph construction code removed. Only use imported graphs and Cell.
 
 
