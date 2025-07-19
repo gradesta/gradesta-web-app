@@ -1,4 +1,4 @@
-import { Cell } from './exampleGraphs.js';
+import { Cell } from './Cell.js';
 
 // Lazy Collatz graph generator
 class LazyCollatzGraph {
