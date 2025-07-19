@@ -1,11 +1,12 @@
-// Cell data structure with 4 directional pointers and contents
+// Cell data structure with 4 directional neighbor functions and contents
 class Cell {
     constructor(contents = "") {
-        this.up = null;      // Pointer to cell above
-        this.down = null;    // Pointer to cell below
-        this.left = null;    // Pointer to cell to the left
-        this.right = null;   // Pointer to cell to the right
         this.contents = contents;  // String contents of the cell
+        // Neighbor functions (can be reassigned)
+        this.getUp = () => null;
+        this.getDown = () => null;
+        this.getLeft = () => null;
+        this.getRight = () => null;
     }
 }
 
@@ -25,27 +26,28 @@ const sample_graph = (() => {
     const rightLeftLeaf = new Cell("Right Left Leaf");
     const rightLeaf = new Cell("Right Leaf");
     
-    // Connect main stack vertically
-    cell1.down = cell2;
-    cell2.up = cell1;
-    cell2.down = cell3;
-    cell3.up = cell2;
-    cell3.down = cell4;
-    cell4.up = cell3;
-    cell4.down = cell5;
-    cell5.up = cell4;
+    // Connect main stack vertically (using neighbor functions)
+    cell1.getDown = () => cell2;
+    cell2.getUp = () => cell1;
+    cell2.getDown = () => cell3;
+    cell3.getUp = () => cell2;
+    cell3.getDown = () => cell4;
+    cell4.getUp = () => cell3;
+    cell4.getDown = () => cell5;
+    cell5.getUp = () => cell4;
     
-    // Add left/right connections
-    cell2.left = leftBranch;
-    leftBranch.right = cell2;
-    leftBranch.down = leftLeaf;
-    leftLeaf.up = leftBranch;
-    leftLeaf.right = rightLeftLeaf;
+    // Add left/right connections (using neighbor functions)
+    cell2.getLeft = () => leftBranch;
+    leftBranch.getRight = () => cell2;
+    leftBranch.getDown = () => leftLeaf;
+    leftLeaf.getUp = () => leftBranch;
+    leftLeaf.getRight = () => rightLeftLeaf;
+    rightLeftLeaf.getLeft = () => leftLeaf;
     
-    cell3.right = rightBranch;
-    rightBranch.left = cell3;
-    rightBranch.down = rightLeaf;
-    rightLeaf.up = rightBranch;
+    cell3.getRight = () => rightBranch;
+    rightBranch.getLeft = () => cell3;
+    rightBranch.getDown = () => rightLeaf;
+    rightLeaf.getUp = () => rightBranch;
     
     return cell1; // Return the top cell as the entry point
 })();
@@ -85,29 +87,29 @@ class GraphVisualizer {
         
         switch(e.key) {
             case 'ArrowUp':
-                if (this.currentCell.up) {
-                    this.currentCell = this.currentCell.up;
+                if (this.currentCell.getUp()) {
+                    this.currentCell = this.currentCell.getUp();
                     this.calculatePositions();
                     this.updateStatus();
                 }
                 break;
             case 'ArrowDown':
-                if (this.currentCell.down) {
-                    this.currentCell = this.currentCell.down;
+                if (this.currentCell.getDown()) {
+                    this.currentCell = this.currentCell.getDown();
                     this.calculatePositions();
                     this.updateStatus();
                 }
                 break;
             case 'ArrowLeft':
-                if (this.currentCell.left) {
-                    this.currentCell = this.currentCell.left;
+                if (this.currentCell.getLeft()) {
+                    this.currentCell = this.currentCell.getLeft();
                     this.calculatePositions();
                     this.updateStatus();
                 }
                 break;
             case 'ArrowRight':
-                if (this.currentCell.right) {
-                    this.currentCell = this.currentCell.right;
+                if (this.currentCell.getRight()) {
+                    this.currentCell = this.currentCell.getRight();
                     this.calculatePositions();
                     this.updateStatus();
                 }
@@ -205,17 +207,17 @@ class GraphVisualizer {
         this.cellPositions.set(cell, { x, y });
         
         // Calculate positions for connected cells
-        if (cell.up) {
-            this.calculatePositionRecursive(cell.up, x, y - this.spacing.y, visited);
+        if (cell.getUp()) {
+            this.calculatePositionRecursive(cell.getUp(), x, y - this.spacing.y, visited);
         }
-        if (cell.down) {
-            this.calculatePositionRecursive(cell.down, x, y + this.spacing.y, visited);
+        if (cell.getDown()) {
+            this.calculatePositionRecursive(cell.getDown(), x, y + this.spacing.y, visited);
         }
-        if (cell.left) {
-            this.calculatePositionRecursive(cell.left, x - this.spacing.x, y, visited);
+        if (cell.getLeft()) {
+            this.calculatePositionRecursive(cell.getLeft(), x - this.spacing.x, y, visited);
         }
-        if (cell.right) {
-            this.calculatePositionRecursive(cell.right, x + this.spacing.x, y, visited);
+        if (cell.getRight()) {
+            this.calculatePositionRecursive(cell.getRight(), x + this.spacing.x, y, visited);
         }
     }
     
@@ -223,48 +225,66 @@ class GraphVisualizer {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Calculate viewport bounds (3 columns centered on current cell)
-        const centerX = this.canvas.width / 2;
-        const leftBound = centerX - this.spacing.x * 1.5;
-        const rightBound = centerX + this.spacing.x * 1.5;
-        
+        // Find up to 5 cells above and below the current cell
+        const verticalColumn = new Set();
+        let currentInColumn = this.currentCell;
+        let steps = 0;
+        // Go up to 5 steps above
+        while (currentInColumn && steps < 5) {
+            verticalColumn.add(currentInColumn);
+            currentInColumn = currentInColumn.getUp();
+            steps++;
+        }
+        // Go down to 5 steps below
+        currentInColumn = this.currentCell.getDown();
+        steps = 0;
+        while (currentInColumn && steps < 5) {
+            verticalColumn.add(currentInColumn);
+            currentInColumn = currentInColumn.getDown();
+            steps++;
+        }
+        // Add left and right neighbors of each cell in the vertical column
+        const cellsToShow = new Set(verticalColumn);
+        verticalColumn.forEach(cell => {
+            if (cell.getLeft()) cellsToShow.add(cell.getLeft());
+            if (cell.getRight()) cellsToShow.add(cell.getRight());
+        });
         // Draw connections first (so they appear behind cells)
-        this.drawConnections(leftBound, rightBound);
-        
-        // Draw cells within viewport
+        this.drawConnections(cellsToShow);
+        // Draw only the visible cells
         this.cellPositions.forEach((pos, cell) => {
-            if (pos.x >= leftBound - this.cellSize.width && pos.x <= rightBound + this.cellSize.width) {
+            if (cellsToShow.has(cell)) {
                 this.drawCell(cell, pos.x, pos.y);
             }
         });
     }
     
-    drawConnections(leftBound, rightBound) {
+    drawConnections(cellsToShow) {
         this.ctx.strokeStyle = '#666';
         this.ctx.lineWidth = 2;
         this.ctx.setLineDash([]);
         
         this.cellPositions.forEach((pos, cell) => {
-            // Only draw connections for cells within or near the viewport
-            if (pos.x >= leftBound - this.cellSize.width && pos.x <= rightBound + this.cellSize.width) {
+            // Only draw connections for visible cells
+            if (cellsToShow.has(cell)) {
                 const centerX = pos.x + this.cellSize.width / 2;
                 const centerY = pos.y + this.cellSize.height / 2;
                 
-                // Draw arrows to connected cells
-                if (cell.up && this.cellPositions.has(cell.up)) {
-                    const upPos = this.cellPositions.get(cell.up);
+                // Draw arrows to connected cells (only if both cells are visible)
+                if (cell.getUp() && cellsToShow.has(cell.getUp())) {
+                    const upPos = this.cellPositions.get(cell.getUp());
                     this.drawArrow(centerX, centerY, centerX, upPos.y + this.cellSize.height, 'up');
                 }
-                if (cell.down && this.cellPositions.has(cell.down)) {
-                    const downPos = this.cellPositions.get(cell.down);
+                if (cell.getDown() && cellsToShow.has(cell.getDown())) {
+                    const downPos = this.cellPositions.get(cell.getDown());
                     this.drawArrow(centerX, centerY, centerX, downPos.y, 'down');
                 }
-                if (cell.left && this.cellPositions.has(cell.left)) {
-                    const leftPos = this.cellPositions.get(cell.left);
+                if (cell.getLeft() && cellsToShow.has(cell.getLeft())) {
+                    const leftPos = this.cellPositions.get(cell.getLeft());
                     this.drawArrow(centerX, centerY, leftPos.x + this.cellSize.width, centerY, 'left');
                 }
-                if (cell.right && this.cellPositions.has(cell.right)) {
-                    const rightPos = this.cellPositions.get(cell.right);
+                if (cell.getRight() && cellsToShow.has(cell.getRight())) {
+                    const rightPos = this.cellPositions.get(cell.getRight());
                     this.drawArrow(centerX, centerY, rightPos.x, centerY, 'right');
                 }
             }
