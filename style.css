@@ -1,0 +1,48 @@
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+}
+
+#graphCanvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    background: #fafafa;
+    cursor: crosshair;
+}
+
+.help-text {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    color: #333;
+    max-width: 300px;
+    backdrop-filter: blur(10px);
+}
+
+.help-text p {
+    margin: 0 0 8px 0;
+}
+
+.help-text p:last-child {
+    margin-bottom: 0;
+}
+
+#statusText {
+    font-weight: normal;
+    color: #666;
+    font-size: 13px;
+} 
