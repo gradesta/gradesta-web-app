@@ -2,6 +2,7 @@
 export class EventHandlers {
     constructor(visualizer) {
         this.visualizer = visualizer;
+        this.homeCell = visualizer.currentCell; // Store reference to home cell
         this.setupEventListeners();
     }
     
@@ -12,6 +13,13 @@ export class EventHandlers {
             this.visualizer.renderer.calculatePositions();
             this.visualizer.render();
         });
+        
+        // Add click handler for home icon
+        const homeIcon = document.getElementById('homeIcon');
+        if (homeIcon) {
+            homeIcon.addEventListener('click', () => this.jumpToHome());
+        }
+        
         this.visualizer.canvas.focus();
     }
     
@@ -52,6 +60,9 @@ export class EventHandlers {
                 break;
             case 'Enter':
                 this.enterEditMode();
+                break;
+            case 'Home':
+                this.jumpToHome();
                 break;
         }
         
@@ -113,5 +124,12 @@ export class EventHandlers {
         // Remove any existing textarea
         const textareas = document.querySelectorAll('textarea');
         textareas.forEach(textarea => textarea.remove());
+    }
+    
+    jumpToHome() {
+        this.visualizer.currentCell = this.homeCell;
+        this.visualizer.renderer.calculatePositions();
+        this.visualizer.renderer.updateStatus();
+        this.visualizer.render();
     }
 } 
