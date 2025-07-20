@@ -56,6 +56,7 @@ function createHomeGraph() {
     sampleEntry.getDown = () => createSampleGraph(home);
     sampleEntry.getRight = () => collatzEntry;
     collatzEntry.getLeft = () => sampleEntry;
+    collatzEntry.getDown = () => createCollatzGraph(home);
     return home;
 }
 
