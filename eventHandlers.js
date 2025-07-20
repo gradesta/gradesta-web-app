@@ -8,7 +8,7 @@ export class EventHandlers {
     setupEventListeners() {
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
         window.addEventListener('resize', () => {
-            this.visualizer.resizeCanvas();
+            this.visualizer.renderer.resizeCanvas();
             this.visualizer.renderer.calculatePositions();
             this.visualizer.render();
         });
@@ -26,28 +26,28 @@ export class EventHandlers {
                 if (this.visualizer.currentCell.getUpCached()) {
                     this.visualizer.currentCell = this.visualizer.currentCell.getUpCached();
                     this.visualizer.renderer.calculatePositions();
-                    this.visualizer.updateStatus();
+                    this.visualizer.renderer.updateStatus();
                 }
                 break;
             case 'ArrowDown':
                 if (this.visualizer.currentCell.getDownCached()) {
                     this.visualizer.currentCell = this.visualizer.currentCell.getDownCached();
                     this.visualizer.renderer.calculatePositions();
-                    this.visualizer.updateStatus();
+                    this.visualizer.renderer.updateStatus();
                 }
                 break;
             case 'ArrowLeft':
                 if (this.visualizer.currentCell.getLeftCached()) {
                     this.visualizer.currentCell = this.visualizer.currentCell.getLeftCached();
                     this.visualizer.renderer.calculatePositions();
-                    this.visualizer.updateStatus();
+                    this.visualizer.renderer.updateStatus();
                 }
                 break;
             case 'ArrowRight':
                 if (this.visualizer.currentCell.getRightCached()) {
                     this.visualizer.currentCell = this.visualizer.currentCell.getRightCached();
                     this.visualizer.renderer.calculatePositions();
-                    this.visualizer.updateStatus();
+                    this.visualizer.renderer.updateStatus();
                 }
                 break;
             case 'Enter':
@@ -60,7 +60,7 @@ export class EventHandlers {
     
     enterEditMode() {
         this.visualizer.isEditMode = true;
-        this.visualizer.updateStatus();
+        this.visualizer.renderer.updateStatus();
         this.visualizer.render();
         
         // Create textarea for editing
@@ -107,7 +107,7 @@ export class EventHandlers {
     
     exitEditMode() {
         this.visualizer.isEditMode = false;
-        this.visualizer.updateStatus();
+        this.visualizer.renderer.updateStatus();
         this.visualizer.render();
         
         // Remove any existing textarea

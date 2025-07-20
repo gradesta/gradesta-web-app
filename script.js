@@ -23,27 +23,13 @@ class GraphVisualizer {
         this.eventHandlers = new EventHandlers(this);
         this.renderer = new Renderer(this);
         
-        this.resizeCanvas();
+        this.renderer.resizeCanvas();
         this.renderer.calculatePositions();
         this.render();
     }
     
-    resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    }
-    
     render() {
         this.renderer.render();
-    }
-    
-    updateStatus() {
-        const statusText = document.getElementById('statusText');
-        if (this.isEditMode) {
-            statusText.textContent = `Editing: ${this.currentCell.contents} (Press Esc to exit)`;
-        } else {
-            statusText.textContent = `Current cell: ${this.currentCell.contents} (Use arrow keys to move, Enter to edit)`;
-        }
     }
 }
 

@@ -5,6 +5,20 @@ export class Renderer {
         this.setupRoundRectPolyfill();
     }
     
+    resizeCanvas() {
+        this.visualizer.canvas.width = window.innerWidth;
+        this.visualizer.canvas.height = window.innerHeight;
+    }
+    
+    updateStatus() {
+        const statusText = document.getElementById('statusText');
+        if (this.visualizer.isEditMode) {
+            statusText.textContent = `Editing: ${this.visualizer.currentCell.contents} (Press Esc to exit)`;
+        } else {
+            statusText.textContent = `Current cell: ${this.visualizer.currentCell.contents} (Use arrow keys to move, Enter to edit)`;
+        }
+    }
+    
     calculatePositions() {
         this.visualizer.cellPositions.clear();
         // Calculate all positions relative to the current cell, with depth limit MAX_GRAPH_DISTANCE
