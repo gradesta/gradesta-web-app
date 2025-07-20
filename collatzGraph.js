@@ -24,8 +24,8 @@ class LazyCollatzGraph {
         if ((number - 1) % 3 == 0 && (number - 1) / 3 % 2 == 1) {
             cell.getRight = () => this.getCell((number - 1) / 3);
         }
-        // add a left cell if number*3 + 1 is an integer
-        if ((number + 1) % 3 == 0) {
+        // if number is odd then add a left cell if number*3 + 1 is an integer
+        if (number % 2 == 1) {
             cell.getLeft = () => this.getCell(number*3 + 1);
         }
         return cell;
@@ -36,4 +36,4 @@ class LazyCollatzGraph {
 export function createCollatzGraph(home) {
     const collatzGraph = new LazyCollatzGraph(home);
     return collatzGraph.getCell(1);
-} 
+}
