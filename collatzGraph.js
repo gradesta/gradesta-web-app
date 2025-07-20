@@ -14,7 +14,7 @@ export class CollatzGraphProvider extends GraphProvider {
             return null;
         }
 
-        var cell = new Cell({ text: number.toString() });
+        var cell = new Cell({ text: number.toString(), cellId: number.toString(), provider: this });
         if (number == 1) {
             cell.getUp = () => this.home;
         }

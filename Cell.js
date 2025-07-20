@@ -5,11 +5,15 @@ class Cell {
         image = null, // base64 string or null
         audio = null, // base64 string or null
         file = null,  // base64 string or null
+        cellId = null, // unique cell identifier
+        provider = null // reference to the graph provider
     } = {}) {
         this.text = text;      // String contents of the cell
         this.image = image;    // Base64 image data
         this.audio = audio;    // Base64 audio data
         this.file = file;      // Base64 file data
+        this.cellId = cellId;  // Unique cell identifier
+        this.provider = provider; // Reference to the graph provider
         // Neighbor functions (can be reassigned)
         this.getUp = () => null;
         this.getDown = () => null;

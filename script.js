@@ -71,6 +71,7 @@ class GraphVisualizer {
                 this.renderer.updateStatus();
                 // No direct render here; provider will trigger
                 updateUrlParams(graphProviderName, cellId);
+                this.renderer.onGraphProviderUpdate(); // Ensure immediate re-render
                 return true;
             }
         }

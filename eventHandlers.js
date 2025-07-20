@@ -29,31 +29,24 @@ export class EventHandlers {
         }
         
         let moved = false;
-        
+        let nextCell = null;
+        let direction = null;
         switch(e.key) {
             case 'ArrowUp':
-                if (this.visualizer.currentCell.getUpCached()) {
-                    this.visualizer.currentCell = this.visualizer.currentCell.getUpCached();
-                    moved = true;
-                }
+                nextCell = this.visualizer.currentCell.getUpCached();
+                direction = 'up';
                 break;
             case 'ArrowDown':
-                if (this.visualizer.currentCell.getDownCached()) {
-                    this.visualizer.currentCell = this.visualizer.currentCell.getDownCached();
-                    moved = true;
-                }
+                nextCell = this.visualizer.currentCell.getDownCached();
+                direction = 'down';
                 break;
             case 'ArrowLeft':
-                if (this.visualizer.currentCell.getLeftCached()) {
-                    this.visualizer.currentCell = this.visualizer.currentCell.getLeftCached();
-                    moved = true;
-                }
+                nextCell = this.visualizer.currentCell.getLeftCached();
+                direction = 'left';
                 break;
             case 'ArrowRight':
-                if (this.visualizer.currentCell.getRightCached()) {
-                    this.visualizer.currentCell = this.visualizer.currentCell.getRightCached();
-                    moved = true;
-                }
+                nextCell = this.visualizer.currentCell.getRightCached();
+                direction = 'right';
                 break;
             case 'Enter':
                 this.enterEditMode();
@@ -62,12 +55,26 @@ export class EventHandlers {
                 this.jumpToHome();
                 break;
         }
-        
-        if (moved) {
-            this.visualizer.renderer.calculatePositions();
-            this.visualizer.renderer.updateStatus();
-            this.updateUrlFromCurrentCell();
-            this.visualizer.render(); // Ensure re-render on navigation
+        // Log current and next cell info
+        console.log('[KeyPress]', e.key, 'CurrentCell:', this.visualizer.currentCell ? {cellId: this.visualizer.currentCell.cellId, text: this.visualizer.currentCell.text} : null, 'NextCell:', nextCell ? {cellId: nextCell.cellId, text: nextCell.text} : null, 'CurrentProvider:', this.visualizer.currentGraphProvider ? this.visualizer.currentGraphProvider.name : null);
+        // If a navigation key was pressed and a next cell exists
+        if (nextCell) {
+            // Use the provider and cellId stored in the nextCell
+            let foundProvider = nextCell.provider ? (nextCell.provider.name || null) : null;
+            let foundCellId = nextCell.cellId;
+            console.log('[Nav]', {foundProvider, foundCellId, nextCell});
+            if (foundProvider && (foundProvider !== this.visualizer.currentGraphProvider.name || foundCellId !== this.visualizer.currentCellId)) {
+                // Use navigateToCell for provider transitions or cellId changes
+                this.visualizer.navigateToCell(foundProvider, foundCellId);
+            } else {
+                // Same provider, just update currentCell
+                this.visualizer.currentCell = nextCell;
+                this.visualizer.renderer.calculatePositions();
+                this.visualizer.renderer.updateStatus();
+                this.updateUrlFromCurrentCell();
+                this.visualizer.render(); // Ensure re-render on navigation
+            }
+            moved = true;
         }
     }
     
@@ -129,32 +136,9 @@ export class EventHandlers {
     }
     
     updateUrlFromCurrentCell() {
-        // Find which graph provider contains the current cell
-        for (const [providerName, provider] of this.visualizer.graphProviders) {
-            // For each provider, we need to find the cell ID
-            if (provider.name === 'home') {
-                // For home provider, check each cell
-                for (const [cellId, cell] of provider.cells) {
-                    if (cell === this.visualizer.currentCell) {
-                        this.updateUrlParams(providerName, cellId);
-                        return;
-                    }
-                }
-            } else if (provider.name === 'sample') {
-                // For sample provider, check each cell
-                for (const [cellId, cell] of provider.cells) {
-                    if (cell === this.visualizer.currentCell) {
-                        this.updateUrlParams(providerName, cellId);
-                        return;
-                    }
-                }
-            } else if (provider.name === 'collatz') {
-                // For collatz provider, the cell ID is the number itself
-                if (this.visualizer.currentCell.contents && !isNaN(parseInt(this.visualizer.currentCell.contents))) {
-                    this.updateUrlParams(providerName, this.visualizer.currentCell.contents);
-                    return;
-                }
-            }
+        // Use the provider and cellId stored in the current cell
+        if (this.visualizer.currentCell && this.visualizer.currentCell.provider && this.visualizer.currentCell.cellId) {
+            this.updateUrlParams(this.visualizer.currentCell.provider.name, this.visualizer.currentCell.cellId);
         }
     }
     

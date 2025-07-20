@@ -63,7 +63,7 @@ export class WebsocketGraphProvider extends GraphProvider {
             return this.lastCellData.get(cellId);
         }
         // Create and store a persistent loading cell
-        const loadingCell = new Cell({ text: 'Loading...', image: null, audio: null, file: null });
+        const loadingCell = new Cell({ text: 'Loading...', image: null, audio: null, file: null, cellId, provider: this });
         this.lastCellData.set(cellId, loadingCell);
         return loadingCell;
     }
@@ -74,6 +74,8 @@ export class WebsocketGraphProvider extends GraphProvider {
             image: data.image || null,
             audio: data.audio || null,
             file: data.file || null,
+            cellId: data['cell-id'] || null,
+            provider: this
         });
         // Update content
         cell.text = data.text || '';

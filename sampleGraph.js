@@ -12,16 +12,16 @@ export class SampleGraphProvider extends GraphProvider {
     
     initializeCells() {
         // Create all cells
-        this.cells.set('top', new Cell({ text: "Top" }));
-        this.cells.set('second', new Cell({ text: "Second" }));
-        this.cells.set('third', new Cell({ text: "Third" }));
-        this.cells.set('fourth', new Cell({ text: "Fourth" }));
-        this.cells.set('bottom', new Cell({ text: "Bottom" }));
-        this.cells.set('leftBranch', new Cell({ text: "Left Branch" }));
-        this.cells.set('rightBranch', new Cell({ text: "Right Branch" }));
-        this.cells.set('leftLeaf', new Cell({ text: "Left Leaf" }));
-        this.cells.set('rightLeftLeaf', new Cell({ text: "Right Left Leaf" }));
-        this.cells.set('rightLeaf', new Cell({ text: "Right Leaf" }));
+        this.cells.set('top', new Cell({ text: "Top", cellId: 'top', provider: this }));
+        this.cells.set('second', new Cell({ text: "Second", cellId: 'second', provider: this }));
+        this.cells.set('third', new Cell({ text: "Third", cellId: 'third', provider: this }));
+        this.cells.set('fourth', new Cell({ text: "Fourth", cellId: 'fourth', provider: this }));
+        this.cells.set('bottom', new Cell({ text: "Bottom", cellId: 'bottom', provider: this }));
+        this.cells.set('leftBranch', new Cell({ text: "Left Branch", cellId: 'leftBranch', provider: this }));
+        this.cells.set('rightBranch', new Cell({ text: "Right Branch", cellId: 'rightBranch', provider: this }));
+        this.cells.set('leftLeaf', new Cell({ text: "Left Leaf", cellId: 'leftLeaf', provider: this }));
+        this.cells.set('rightLeftLeaf', new Cell({ text: "Right Left Leaf", cellId: 'rightLeftLeaf', provider: this }));
+        this.cells.set('rightLeaf', new Cell({ text: "Right Leaf", cellId: 'rightLeaf', provider: this }));
         
         // Connect main stack vertically
         this.cells.get('top').getDown = () => this.cells.get('second');
