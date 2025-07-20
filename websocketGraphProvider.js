@@ -40,27 +40,29 @@ export class WebsocketGraphProvider extends GraphProvider {
     }
 
     getCell(cellId) {
-        // Always request from websocket
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({ get: cellId }));
-            console.log('sent request', JSON.stringify({ get: cellId }));
-        } else {
-            // Wait for connection
-            const trySend = () => {
-                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                    this.ws.send(JSON.stringify({ get: cellId }));
-                    console.log('sent request', JSON.stringify({ get: cellId }));
-                } else {
-                    console.log('waiting for connection');
-                    setTimeout(trySend, 200);
-                }
-            };
-            trySend();
-        }
+
         console.log('lastCellData', this.lastCellData);
         // If we have a response, return the real cell, else return a skeleton
         if (this.lastCellData.has(cellId)) {
             return this.lastCellData.get(cellId);
+        }else {
+            // Always request from websocket
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({ get: cellId }));
+                console.log('sent request', JSON.stringify({ get: cellId }));
+            } else {
+                // Wait for connection
+                const trySend = () => {
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(JSON.stringify({ get: cellId }));
+                        console.log('sent request', JSON.stringify({ get: cellId }));
+                    } else {
+                        console.log('waiting for connection');
+                        setTimeout(trySend, 200);
+                    }
+                };
+                trySend();
+            }
         }
         // Create and store a persistent loading cell
         const loadingCell = new Cell({ text: 'Loading...', image: null, audio: null, file: null, cellId, provider: this });
