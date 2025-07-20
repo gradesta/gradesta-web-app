@@ -82,11 +82,16 @@ export class WebsocketGraphProvider extends GraphProvider {
         cell.image = data.image || null;
         cell.audio = data.audio || null;
         cell.file = data.file || null;
-        // Hook up neighbors as lazy functions if present
-        cell.up = data.up ? (() => this.getCell(data.up)) : undefined;
-        cell.down = data.down ? (() => this.getCell(data.down)) : undefined;
-        cell.left = data.left ? (() => this.getCell(data.left)) : undefined;
-        cell.right = data.right ? (() => this.getCell(data.right)) : undefined;
+        // Store neighbor IDs
+        cell.upId = data.up || null;
+        cell.downId = data.down || null;
+        cell.leftId = data.left || null;
+        cell.rightId = data.right || null;
+        // Provide explicit neighbor fetch methods
+        cell.getUp = () => cell.upId ? this.getCell(cell.upId) : undefined;
+        cell.getDown = () => cell.downId ? this.getCell(cell.downId) : undefined;
+        cell.getLeft = () => cell.leftId ? this.getCell(cell.leftId) : undefined;
+        cell.getRight = () => cell.rightId ? this.getCell(cell.rightId) : undefined;
         return cell;
     }
 } 

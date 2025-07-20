@@ -11,7 +11,7 @@ const fileBrowserProvider = new WebsocketGraphProvider('filebrowser', 'ws://0.0.
 // Link the providers together
 homeProvider.getCell('sampleEntry').getDown = () => sampleProvider.getCell('top');
 homeProvider.getCell('collatzEntry').getDown = () => collatzProvider.getCell('1');
-homeProvider.getCell('fileBrowserEntry').getDown = () => fileBrowserProvider.getCell('/');
+homeProvider.getCell('fileBrowserEntry').getDown = () => fileBrowserProvider.getCell('file:///');
 // Create a map of all graph providers
 const graphProviders = new Map();
 graphProviders.set('home', homeProvider);
