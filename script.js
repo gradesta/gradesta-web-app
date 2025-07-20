@@ -3,8 +3,8 @@ const MAX_VERTICAL_DISTANCE = 5;
 const MAX_GRAPH_DISTANCE = MAX_VERTICAL_DISTANCE + 1;
 
 import { home_graph, Cell } from './exampleGraphs.js';
-// All graph construction code removed. Only use imported graphs and Cell.
-
+import { EventHandlers } from './eventHandlers.js';
+import { Renderer } from './render.js';
 
 // Graph Visualizer Class
 class GraphVisualizer {
@@ -16,63 +16,15 @@ class GraphVisualizer {
         this.cellPositions = new Map();
         this.cellSize = { width: 120, height: 80 };
         this.spacing = { x: 200, y: 120 };
+        this.MAX_VERTICAL_DISTANCE = MAX_VERTICAL_DISTANCE;
+        this.MAX_GRAPH_DISTANCE = MAX_GRAPH_DISTANCE;
         
-        this.setupEventListeners();
+        // Initialize modules
+        this.eventHandlers = new EventHandlers(this);
+        this.renderer = new Renderer(this);
+        
         this.resizeCanvas();
-        this.calculatePositions();
-        this.render();
-    }
-    
-    setupEventListeners() {
-        document.addEventListener('keydown', (e) => this.handleKeyPress(e));
-        window.addEventListener('resize', () => {
-            this.resizeCanvas();
-            this.calculatePositions();
-            this.render();
-        });
-        this.canvas.focus();
-    }
-    
-    handleKeyPress(e) {
-        if (this.isEditMode) {
-            // Don't handle keys in edit mode - let the textarea handle them
-            return;
-        }
-        
-        switch(e.key) {
-            case 'ArrowUp':
-                if (this.currentCell.getUpCached()) {
-                    this.currentCell = this.currentCell.getUpCached();
-                    this.calculatePositions();
-                    this.updateStatus();
-                }
-                break;
-            case 'ArrowDown':
-                if (this.currentCell.getDownCached()) {
-                    this.currentCell = this.currentCell.getDownCached();
-                    this.calculatePositions();
-                    this.updateStatus();
-                }
-                break;
-            case 'ArrowLeft':
-                if (this.currentCell.getLeftCached()) {
-                    this.currentCell = this.currentCell.getLeftCached();
-                    this.calculatePositions();
-                    this.updateStatus();
-                }
-                break;
-            case 'ArrowRight':
-                if (this.currentCell.getRightCached()) {
-                    this.currentCell = this.currentCell.getRightCached();
-                    this.calculatePositions();
-                    this.updateStatus();
-                }
-                break;
-            case 'Enter':
-                this.enterEditMode();
-                break;
-        }
-        
+        this.renderer.calculatePositions();
         this.render();
     }
     
@@ -81,249 +33,8 @@ class GraphVisualizer {
         this.canvas.height = window.innerHeight;
     }
     
-    enterEditMode() {
-        this.isEditMode = true;
-        this.updateStatus();
-        this.render();
-        
-        // Create textarea for editing
-        const pos = this.cellPositions.get(this.currentCell);
-        if (pos) {
-            const textarea = document.createElement('textarea');
-            textarea.value = this.currentCell.contents;
-            textarea.style.position = 'absolute';
-            textarea.style.left = (this.canvas.offsetLeft + pos.x) + 'px';
-            textarea.style.top = (this.canvas.offsetTop + pos.y) + 'px';
-            textarea.style.width = this.cellSize.width + 'px';
-            textarea.style.height = this.cellSize.height + 'px';
-            textarea.style.border = '2px solid #28a745';
-            textarea.style.borderRadius = '8px';
-            textarea.style.padding = '10px';
-            textarea.style.fontSize = '12px';
-            textarea.style.fontFamily = 'Arial, sans-serif';
-            textarea.style.resize = 'none';
-            textarea.style.zIndex = '1000';
-            textarea.style.boxSizing = 'border-box';
-            
-            textarea.addEventListener('blur', () => {
-                this.currentCell.contents = textarea.value;
-                this.exitEditMode();
-            });
-            
-            textarea.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    this.currentCell.contents = textarea.value;
-                    this.exitEditMode();
-                }
-            });
-            
-            document.body.appendChild(textarea);
-            
-            // Ensure the textarea is populated and visible
-            setTimeout(() => {
-                textarea.value = this.currentCell.contents;
-                textarea.focus();
-                textarea.select();
-            }, 10);
-        }
-    }
-    
-    exitEditMode() {
-        this.isEditMode = false;
-        this.updateStatus();
-        this.render();
-        
-        // Remove any existing textarea
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(textarea => textarea.remove());
-    }
-    
-    calculatePositions() {
-        this.cellPositions.clear();
-        // Calculate all positions relative to the current cell, with depth limit MAX_GRAPH_DISTANCE
-        this.calculatePositionRecursive(this.currentCell, 0, 0, new Set(), 0);
-        // Apply viewport offset to center the current cell
-        const centerX = this.canvas.width / 2;
-        const centerY = this.canvas.height / 2;
-        this.cellPositions.forEach((pos, cell) => {
-            pos.x += centerX - this.cellSize.width / 2;
-            pos.y += centerY - this.cellSize.height / 2;
-        });
-    }
-    
-    calculatePositionRecursive(cell, x, y, visited, depth = 0) {
-        if (!cell || visited.has(cell) || depth > MAX_GRAPH_DISTANCE) return;
-        visited.add(cell);
-        this.cellPositions.set(cell, { x, y });
-        // Calculate positions for connected cells, incrementing depth
-        if (cell.getUpCached()) {
-            this.calculatePositionRecursive(cell.getUpCached(), x, y - this.spacing.y, visited, depth + 1);
-        }
-        if (cell.getDownCached()) {
-            this.calculatePositionRecursive(cell.getDownCached(), x, y + this.spacing.y, visited, depth + 1);
-        }
-        if (cell.getLeftCached()) {
-            this.calculatePositionRecursive(cell.getLeftCached(), x - this.spacing.x, y, visited, depth + 1);
-        }
-        if (cell.getRightCached()) {
-            this.calculatePositionRecursive(cell.getRightCached(), x + this.spacing.x, y, visited, depth + 1);
-        }
-    }
-    
     render() {
-        // Clear canvas
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        // Find up to MAX_VERTICAL_DISTANCE cells above and below the current cell
-        const verticalColumn = new Set();
-        let currentInColumn = this.currentCell;
-        let steps = 0;
-        // Go up to MAX_VERTICAL_DISTANCE steps above
-        while (currentInColumn && steps < MAX_VERTICAL_DISTANCE) {
-            verticalColumn.add(currentInColumn);
-            currentInColumn = currentInColumn.getUpCached();
-            steps++;
-        }
-        // Go down to MAX_VERTICAL_DISTANCE steps below
-        currentInColumn = this.currentCell.getDownCached();
-        steps = 0;
-        while (currentInColumn && steps < MAX_VERTICAL_DISTANCE) {
-            verticalColumn.add(currentInColumn);
-            currentInColumn = currentInColumn.getDownCached();
-            steps++;
-        }
-        // Add left and right neighbors of each cell in the vertical column
-        const cellsToShow = new Set(verticalColumn);
-        verticalColumn.forEach(cell => {
-            if (cell.getLeftCached()) cellsToShow.add(cell.getLeftCached());
-            if (cell.getRightCached()) cellsToShow.add(cell.getRightCached());
-        });
-        // Draw connections first (so they appear behind cells)
-        this.drawConnections(cellsToShow);
-        // Draw only the visible cells
-        this.cellPositions.forEach((pos, cell) => {
-            if (cellsToShow.has(cell)) {
-                this.drawCell(cell, pos.x, pos.y);
-            }
-        });
-    }
-    
-    drawConnections(cellsToShow) {
-        this.ctx.strokeStyle = '#666';
-        this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([]);
-        
-        this.cellPositions.forEach((pos, cell) => {
-            // Only draw connections for visible cells
-            if (cellsToShow.has(cell)) {
-                const centerX = pos.x + this.cellSize.width / 2;
-                const centerY = pos.y + this.cellSize.height / 2;
-                
-                // Draw arrows to connected cells (only if both cells are visible)
-                if (cell.getUpCached() && cellsToShow.has(cell.getUpCached())) {
-                    const upPos = this.cellPositions.get(cell.getUpCached());
-                    this.drawArrow(centerX, centerY, centerX, upPos.y + this.cellSize.height, 'up');
-                }
-                if (cell.getDownCached() && cellsToShow.has(cell.getDownCached())) {
-                    const downPos = this.cellPositions.get(cell.getDownCached());
-                    this.drawArrow(centerX, centerY, centerX, downPos.y, 'down');
-                }
-                if (cell.getLeftCached() && cellsToShow.has(cell.getLeftCached())) {
-                    const leftPos = this.cellPositions.get(cell.getLeftCached());
-                    this.drawArrow(centerX, centerY, leftPos.x + this.cellSize.width, centerY, 'left');
-                }
-                if (cell.getRightCached() && cellsToShow.has(cell.getRightCached())) {
-                    const rightPos = this.cellPositions.get(cell.getRightCached());
-                    this.drawArrow(centerX, centerY, rightPos.x, centerY, 'right');
-                }
-            }
-        });
-    }
-    
-    drawArrow(fromX, fromY, toX, toY, direction) {
-        this.ctx.beginPath();
-        this.ctx.moveTo(fromX, fromY);
-        this.ctx.lineTo(toX, toY);
-        this.ctx.stroke();
-        
-        // Draw arrowhead
-        const arrowSize = 8;
-        this.ctx.beginPath();
-        
-        switch(direction) {
-            case 'up':
-                this.ctx.moveTo(toX, toY);
-                this.ctx.lineTo(toX - arrowSize, toY + arrowSize);
-                this.ctx.lineTo(toX + arrowSize, toY + arrowSize);
-                break;
-            case 'down':
-                this.ctx.moveTo(toX, toY);
-                this.ctx.lineTo(toX - arrowSize, toY - arrowSize);
-                this.ctx.lineTo(toX + arrowSize, toY - arrowSize);
-                break;
-            case 'left':
-                this.ctx.moveTo(toX, toY);
-                this.ctx.lineTo(toX + arrowSize, toY - arrowSize);
-                this.ctx.lineTo(toX + arrowSize, toY + arrowSize);
-                break;
-            case 'right':
-                this.ctx.moveTo(toX, toY);
-                this.ctx.lineTo(toX - arrowSize, toY - arrowSize);
-                this.ctx.lineTo(toX - arrowSize, toY + arrowSize);
-                break;
-        }
-        
-        this.ctx.closePath();
-        this.ctx.fillStyle = '#666';
-        this.ctx.fill();
-    }
-    
-    drawCell(cell, x, y) {
-        const isSelected = cell === this.currentCell;
-        
-        // Draw cell background
-        this.ctx.fillStyle = isSelected ? '#e8f5e8' : '#fff';
-        this.ctx.strokeStyle = isSelected ? '#28a745' : '#ccc';
-        this.ctx.lineWidth = isSelected ? 3 : 2;
-        
-        this.ctx.beginPath();
-        this.ctx.roundRect(x, y, this.cellSize.width, this.cellSize.height, 8);
-        this.ctx.fill();
-        this.ctx.stroke();
-        
-        // Draw cell content
-        this.ctx.fillStyle = '#333';
-        this.ctx.font = '12px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        
-        const textX = x + this.cellSize.width / 2;
-        const textY = y + this.cellSize.height / 2;
-        
-        // Wrap text if it's too long
-        const maxWidth = this.cellSize.width - 20;
-        const words = cell.contents.split(' ');
-        let line = '';
-        let lines = [];
-        
-        for (let word of words) {
-            const testLine = line + word + ' ';
-            const metrics = this.ctx.measureText(testLine);
-            if (metrics.width > maxWidth && line !== '') {
-                lines.push(line);
-                line = word + ' ';
-            } else {
-                line = testLine;
-            }
-        }
-        lines.push(line);
-        
-        // Draw lines of text
-        const lineHeight = 16;
-        const startY = textY - (lines.length - 1) * lineHeight / 2;
-        
-        lines.forEach((line, index) => {
-            this.ctx.fillText(line.trim(), textX, startY + index * lineHeight);
-        });
+        this.renderer.render();
     }
     
     updateStatus() {
@@ -339,21 +50,4 @@ class GraphVisualizer {
 // Initialize the visualizer when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new GraphVisualizer('graphCanvas');
-});
-
-// Add roundRect polyfill for older browsers
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-        this.beginPath();
-        this.moveTo(x + radius, y);
-        this.lineTo(x + width - radius, y);
-        this.quadraticCurveTo(x + width, y, x + width, y + radius);
-        this.lineTo(x + width, y + height - radius);
-        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        this.lineTo(x + radius, y + height);
-        this.quadraticCurveTo(x, y + height, x, y + height - radius);
-        this.lineTo(x, y + radius);
-        this.quadraticCurveTo(x, y, x + radius, y);
-        this.closePath();
-    };
-} 
+}); 
