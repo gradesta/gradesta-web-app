@@ -12,6 +12,11 @@ export class Renderer {
     
     updateStatus() {
         const statusText = document.getElementById('statusText');
+        if (!this.visualizer.currentCell) {
+            statusText.textContent = 'No cell selected';
+            return;
+        }
+        
         if (this.visualizer.isEditMode) {
             statusText.textContent = `Editing: ${this.visualizer.currentCell.contents} (Press Esc to exit)`;
         } else {
@@ -54,6 +59,10 @@ export class Renderer {
     render() {
         // Clear canvas
         this.visualizer.ctx.clearRect(0, 0, this.visualizer.canvas.width, this.visualizer.canvas.height);
+        
+        if (!this.visualizer.currentCell) {
+            return;
+        }
         
         // Find up to MAX_VERTICAL_DISTANCE cells above and below the current cell
         const verticalColumn = new Set();

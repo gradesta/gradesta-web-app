@@ -2,7 +2,6 @@
 export class EventHandlers {
     constructor(visualizer) {
         this.visualizer = visualizer;
-        this.homeCell = visualizer.currentCell; // Store reference to home cell
         this.setupEventListeners();
     }
     
@@ -29,33 +28,31 @@ export class EventHandlers {
             return;
         }
         
+        let moved = false;
+        
         switch(e.key) {
             case 'ArrowUp':
                 if (this.visualizer.currentCell.getUpCached()) {
                     this.visualizer.currentCell = this.visualizer.currentCell.getUpCached();
-                    this.visualizer.renderer.calculatePositions();
-                    this.visualizer.renderer.updateStatus();
+                    moved = true;
                 }
                 break;
             case 'ArrowDown':
                 if (this.visualizer.currentCell.getDownCached()) {
                     this.visualizer.currentCell = this.visualizer.currentCell.getDownCached();
-                    this.visualizer.renderer.calculatePositions();
-                    this.visualizer.renderer.updateStatus();
+                    moved = true;
                 }
                 break;
             case 'ArrowLeft':
                 if (this.visualizer.currentCell.getLeftCached()) {
                     this.visualizer.currentCell = this.visualizer.currentCell.getLeftCached();
-                    this.visualizer.renderer.calculatePositions();
-                    this.visualizer.renderer.updateStatus();
+                    moved = true;
                 }
                 break;
             case 'ArrowRight':
                 if (this.visualizer.currentCell.getRightCached()) {
                     this.visualizer.currentCell = this.visualizer.currentCell.getRightCached();
-                    this.visualizer.renderer.calculatePositions();
-                    this.visualizer.renderer.updateStatus();
+                    moved = true;
                 }
                 break;
             case 'Enter':
@@ -66,7 +63,12 @@ export class EventHandlers {
                 break;
         }
         
-        this.visualizer.render();
+        if (moved) {
+            this.visualizer.renderer.calculatePositions();
+            this.visualizer.renderer.updateStatus();
+            this.updateUrlFromCurrentCell();
+            this.visualizer.render();
+        }
     }
     
     enterEditMode() {
@@ -126,10 +128,44 @@ export class EventHandlers {
         textareas.forEach(textarea => textarea.remove());
     }
     
+    updateUrlFromCurrentCell() {
+        // Find which graph provider contains the current cell
+        for (const [providerName, provider] of this.visualizer.graphProviders) {
+            // For each provider, we need to find the cell ID
+            if (provider.name === 'home') {
+                // For home provider, check each cell
+                for (const [cellId, cell] of provider.cells) {
+                    if (cell === this.visualizer.currentCell) {
+                        this.updateUrlParams(providerName, cellId);
+                        return;
+                    }
+                }
+            } else if (provider.name === 'sample') {
+                // For sample provider, check each cell
+                for (const [cellId, cell] of provider.cells) {
+                    if (cell === this.visualizer.currentCell) {
+                        this.updateUrlParams(providerName, cellId);
+                        return;
+                    }
+                }
+            } else if (provider.name === 'collatz') {
+                // For collatz provider, the cell ID is the number itself
+                if (this.visualizer.currentCell.contents && !isNaN(parseInt(this.visualizer.currentCell.contents))) {
+                    this.updateUrlParams(providerName, this.visualizer.currentCell.contents);
+                    return;
+                }
+            }
+        }
+    }
+    
+    updateUrlParams(graphProvider, cellId) {
+        const url = new URL(window.location);
+        url.searchParams.set('graphProvider', graphProvider);
+        url.searchParams.set('cellId', cellId);
+        window.history.replaceState({}, '', url);
+    }
+    
     jumpToHome() {
-        this.visualizer.currentCell = this.homeCell;
-        this.visualizer.renderer.calculatePositions();
-        this.visualizer.renderer.updateStatus();
-        this.visualizer.render();
+        this.visualizer.navigateToCell('home', 'home');
     }
 } 
