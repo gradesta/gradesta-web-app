@@ -41,29 +41,29 @@ class GraphVisualizer {
         
         switch(e.key) {
             case 'ArrowUp':
-                if (this.currentCell.getUp()) {
-                    this.currentCell = this.currentCell.getUp();
+                if (this.currentCell.getUpCached()) {
+                    this.currentCell = this.currentCell.getUpCached();
                     this.calculatePositions();
                     this.updateStatus();
                 }
                 break;
             case 'ArrowDown':
-                if (this.currentCell.getDown()) {
-                    this.currentCell = this.currentCell.getDown();
+                if (this.currentCell.getDownCached()) {
+                    this.currentCell = this.currentCell.getDownCached();
                     this.calculatePositions();
                     this.updateStatus();
                 }
                 break;
             case 'ArrowLeft':
-                if (this.currentCell.getLeft()) {
-                    this.currentCell = this.currentCell.getLeft();
+                if (this.currentCell.getLeftCached()) {
+                    this.currentCell = this.currentCell.getLeftCached();
                     this.calculatePositions();
                     this.updateStatus();
                 }
                 break;
             case 'ArrowRight':
-                if (this.currentCell.getRight()) {
-                    this.currentCell = this.currentCell.getRight();
+                if (this.currentCell.getRightCached()) {
+                    this.currentCell = this.currentCell.getRightCached();
                     this.calculatePositions();
                     this.updateStatus();
                 }
@@ -156,17 +156,17 @@ class GraphVisualizer {
         visited.add(cell);
         this.cellPositions.set(cell, { x, y });
         // Calculate positions for connected cells, incrementing depth
-        if (cell.getUp()) {
-            this.calculatePositionRecursive(cell.getUp(), x, y - this.spacing.y, visited, depth + 1);
+        if (cell.getUpCached()) {
+            this.calculatePositionRecursive(cell.getUpCached(), x, y - this.spacing.y, visited, depth + 1);
         }
-        if (cell.getDown()) {
-            this.calculatePositionRecursive(cell.getDown(), x, y + this.spacing.y, visited, depth + 1);
+        if (cell.getDownCached()) {
+            this.calculatePositionRecursive(cell.getDownCached(), x, y + this.spacing.y, visited, depth + 1);
         }
-        if (cell.getLeft()) {
-            this.calculatePositionRecursive(cell.getLeft(), x - this.spacing.x, y, visited, depth + 1);
+        if (cell.getLeftCached()) {
+            this.calculatePositionRecursive(cell.getLeftCached(), x - this.spacing.x, y, visited, depth + 1);
         }
-        if (cell.getRight()) {
-            this.calculatePositionRecursive(cell.getRight(), x + this.spacing.x, y, visited, depth + 1);
+        if (cell.getRightCached()) {
+            this.calculatePositionRecursive(cell.getRightCached(), x + this.spacing.x, y, visited, depth + 1);
         }
     }
     
@@ -180,22 +180,22 @@ class GraphVisualizer {
         // Go up to MAX_VERTICAL_DISTANCE steps above
         while (currentInColumn && steps < MAX_VERTICAL_DISTANCE) {
             verticalColumn.add(currentInColumn);
-            currentInColumn = currentInColumn.getUp();
+            currentInColumn = currentInColumn.getUpCached();
             steps++;
         }
         // Go down to MAX_VERTICAL_DISTANCE steps below
-        currentInColumn = this.currentCell.getDown();
+        currentInColumn = this.currentCell.getDownCached();
         steps = 0;
         while (currentInColumn && steps < MAX_VERTICAL_DISTANCE) {
             verticalColumn.add(currentInColumn);
-            currentInColumn = currentInColumn.getDown();
+            currentInColumn = currentInColumn.getDownCached();
             steps++;
         }
         // Add left and right neighbors of each cell in the vertical column
         const cellsToShow = new Set(verticalColumn);
         verticalColumn.forEach(cell => {
-            if (cell.getLeft()) cellsToShow.add(cell.getLeft());
-            if (cell.getRight()) cellsToShow.add(cell.getRight());
+            if (cell.getLeftCached()) cellsToShow.add(cell.getLeftCached());
+            if (cell.getRightCached()) cellsToShow.add(cell.getRightCached());
         });
         // Draw connections first (so they appear behind cells)
         this.drawConnections(cellsToShow);
@@ -219,20 +219,20 @@ class GraphVisualizer {
                 const centerY = pos.y + this.cellSize.height / 2;
                 
                 // Draw arrows to connected cells (only if both cells are visible)
-                if (cell.getUp() && cellsToShow.has(cell.getUp())) {
-                    const upPos = this.cellPositions.get(cell.getUp());
+                if (cell.getUpCached() && cellsToShow.has(cell.getUpCached())) {
+                    const upPos = this.cellPositions.get(cell.getUpCached());
                     this.drawArrow(centerX, centerY, centerX, upPos.y + this.cellSize.height, 'up');
                 }
-                if (cell.getDown() && cellsToShow.has(cell.getDown())) {
-                    const downPos = this.cellPositions.get(cell.getDown());
+                if (cell.getDownCached() && cellsToShow.has(cell.getDownCached())) {
+                    const downPos = this.cellPositions.get(cell.getDownCached());
                     this.drawArrow(centerX, centerY, centerX, downPos.y, 'down');
                 }
-                if (cell.getLeft() && cellsToShow.has(cell.getLeft())) {
-                    const leftPos = this.cellPositions.get(cell.getLeft());
+                if (cell.getLeftCached() && cellsToShow.has(cell.getLeftCached())) {
+                    const leftPos = this.cellPositions.get(cell.getLeftCached());
                     this.drawArrow(centerX, centerY, leftPos.x + this.cellSize.width, centerY, 'left');
                 }
-                if (cell.getRight() && cellsToShow.has(cell.getRight())) {
-                    const rightPos = this.cellPositions.get(cell.getRight());
+                if (cell.getRightCached() && cellsToShow.has(cell.getRightCached())) {
+                    const rightPos = this.cellPositions.get(cell.getRightCached());
                     this.drawArrow(centerX, centerY, rightPos.x, centerY, 'right');
                 }
             }
