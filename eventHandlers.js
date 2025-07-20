@@ -67,7 +67,7 @@ export class EventHandlers {
             this.visualizer.renderer.calculatePositions();
             this.visualizer.renderer.updateStatus();
             this.updateUrlFromCurrentCell();
-            this.visualizer.render();
+            this.visualizer.render(); // Ensure re-render on navigation
         }
     }
     
@@ -80,7 +80,7 @@ export class EventHandlers {
         const pos = this.visualizer.cellPositions.get(this.visualizer.currentCell);
         if (pos) {
             const textarea = document.createElement('textarea');
-            textarea.value = this.visualizer.currentCell.contents;
+            textarea.value = this.visualizer.currentCell.text;
             textarea.style.position = 'absolute';
             textarea.style.left = (this.visualizer.canvas.offsetLeft + pos.x) + 'px';
             textarea.style.top = (this.visualizer.canvas.offsetTop + pos.y) + 'px';
@@ -96,13 +96,13 @@ export class EventHandlers {
             textarea.style.boxSizing = 'border-box';
             
             textarea.addEventListener('blur', () => {
-                this.visualizer.currentCell.contents = textarea.value;
+                this.visualizer.currentCell.text = textarea.value;
                 this.exitEditMode();
             });
             
             textarea.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    this.visualizer.currentCell.contents = textarea.value;
+                    this.visualizer.currentCell.text = textarea.value;
                     this.exitEditMode();
                 }
             });
@@ -111,7 +111,7 @@ export class EventHandlers {
             
             // Ensure the textarea is populated and visible
             setTimeout(() => {
-                textarea.value = this.visualizer.currentCell.contents;
+                textarea.value = this.visualizer.currentCell.text;
                 textarea.focus();
                 textarea.select();
             }, 10);
@@ -167,5 +167,6 @@ export class EventHandlers {
     
     jumpToHome() {
         this.visualizer.navigateToCell('home', 'home');
+        this.visualizer.render(); // Ensure re-render after pressing Home
     }
 } 

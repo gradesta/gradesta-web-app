@@ -45,4 +45,13 @@ body {
     font-weight: normal;
     color: #666;
     font-size: 13px;
+}
+
+.cell-overlay {
+    pointer-events: none;
+    position: absolute;
+    z-index: 10;
+}
+.cell-overlay a {
+    pointer-events: auto;
 } 

@@ -10,15 +10,17 @@ export class HomeGraphProvider extends GraphProvider {
     }
     
     initializeCells() {
-        this.cells.set('home', new Cell('Home'));
-        this.cells.set('sampleEntry', new Cell('Sample Graph'));
-        this.cells.set('collatzEntry', new Cell('Collatz Graph'));
-        
-        // Link home to sample and collatz entries
+        this.cells.set('home', new Cell({ text: 'Home' }));
+        this.cells.set('sampleEntry', new Cell({ text: 'Sample Graph' }));
+        this.cells.set('collatzEntry', new Cell({ text: 'Collatz Graph' }));
+        this.cells.set('fileBrowserEntry', new Cell({ text: 'File Browser' }));
+        // Link home to sample, collatz, and file browser entries
         this.cells.get('home').getDown = () => this.cells.get('sampleEntry');
         this.cells.get('sampleEntry').getUp = () => this.cells.get('home');
         this.cells.get('sampleEntry').getRight = () => this.cells.get('collatzEntry');
         this.cells.get('collatzEntry').getLeft = () => this.cells.get('sampleEntry');
+        this.cells.get('collatzEntry').getRight = () => this.cells.get('fileBrowserEntry');
+        this.cells.get('fileBrowserEntry').getLeft = () => this.cells.get('collatzEntry');
     }
     
     getCell(cellId) {

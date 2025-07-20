@@ -30,6 +30,7 @@ class GraphVisualizer {
         this.graphProviders = graphProviders;
         this.currentGraphProvider = null;
         this.currentCell = null;
+        this.currentCellId = null; // Track the current cellId
         this.isEditMode = false;
         this.cellPositions = new Map();
         this.cellSize = { width: 120, height: 80 };
@@ -45,14 +46,16 @@ class GraphVisualizer {
         this.renderer = new Renderer(this);
         
         this.renderer.resizeCanvas();
+        this.renderer.setProvider(this.currentGraphProvider);
         this.renderer.calculatePositions();
-        this.render();
+        // No direct render here; provider will trigger
     }
     
     initializeFromUrl() {
         const params = getUrlParams();
         this.currentGraphProvider = this.graphProviders.get(params.graphProvider) || homeProvider;
-        this.currentCell = this.currentGraphProvider.getCell(params.cellId) || homeProvider.getCell('home');
+        this.currentCellId = params.cellId; // Track cellId
+        this.currentCell = this.currentGraphProvider.getCell(this.currentCellId) || homeProvider.getCell('home');
     }
     
     navigateToCell(graphProviderName, cellId) {
@@ -61,10 +64,12 @@ class GraphVisualizer {
             const cell = graphProvider.getCell(cellId);
             if (cell) {
                 this.currentGraphProvider = graphProvider;
+                this.currentCellId = cellId; // Track cellId
                 this.currentCell = cell;
+                this.renderer.setProvider(graphProvider);
                 this.renderer.calculatePositions();
                 this.renderer.updateStatus();
-                this.render();
+                // No direct render here; provider will trigger
                 updateUrlParams(graphProviderName, cellId);
                 return true;
             }
@@ -79,5 +84,6 @@ class GraphVisualizer {
 
 // Initialize the visualizer when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new GraphVisualizer('graphCanvas');
+    const visualizer = new GraphVisualizer('graphCanvas');
+    visualizer.render(); // Ensure initial render on window load
 }); 

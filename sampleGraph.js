@@ -12,16 +12,16 @@ export class SampleGraphProvider extends GraphProvider {
     
     initializeCells() {
         // Create all cells
-        this.cells.set('top', new Cell("Top"));
-        this.cells.set('second', new Cell("Second"));
-        this.cells.set('third', new Cell("Third"));
-        this.cells.set('fourth', new Cell("Fourth"));
-        this.cells.set('bottom', new Cell("Bottom"));
-        this.cells.set('leftBranch', new Cell("Left Branch"));
-        this.cells.set('rightBranch', new Cell("Right Branch"));
-        this.cells.set('leftLeaf', new Cell("Left Leaf"));
-        this.cells.set('rightLeftLeaf', new Cell("Right Left Leaf"));
-        this.cells.set('rightLeaf', new Cell("Right Leaf"));
+        this.cells.set('top', new Cell({ text: "Top" }));
+        this.cells.set('second', new Cell({ text: "Second" }));
+        this.cells.set('third', new Cell({ text: "Third" }));
+        this.cells.set('fourth', new Cell({ text: "Fourth" }));
+        this.cells.set('bottom', new Cell({ text: "Bottom" }));
+        this.cells.set('leftBranch', new Cell({ text: "Left Branch" }));
+        this.cells.set('rightBranch', new Cell({ text: "Right Branch" }));
+        this.cells.set('leftLeaf', new Cell({ text: "Left Leaf" }));
+        this.cells.set('rightLeftLeaf', new Cell({ text: "Right Left Leaf" }));
+        this.cells.set('rightLeaf', new Cell({ text: "Right Leaf" }));
         
         // Connect main stack vertically
         this.cells.get('top').getDown = () => this.cells.get('second');
